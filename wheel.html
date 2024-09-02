@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin Wheel App</title>
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+        body {
+            height: 100vh;
+            background: linear-gradient(135deg, #c3a3f1, #6414e9);
+        }
+        .wrapper {
+            width: 90%;
+            max-width: 40em; /* Increase the max-width */
+            max-height: 90vh;
+            background-color: #ffffff;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            padding: 3em;
+            border-radius: 1em;
+            box-shadow: 0 4em 5em rgba(27, 8, 53, 0.2);
+            text-align: center;
+        }
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        #wheel {
+            width: 100%;
+            height: 100%;
+            max-width: 30em; /* Increase the max-width for the wheel */
+            max-height: 30em; /* Increase the max-height for the wheel */
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff 50%, #ccc 80%);
+            margin: auto; /* Center the wheel */
+        }
+        #spin-btn {
+            position: absolute;
+            top: -240px; /* Center the spin button vertically */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            height: 85px;
+            width: 85px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 0;
+            background: radial-gradient(#ffffff 50%, #ffffff 85%);
+            color: #c66e16;
+            text-transform: uppercase;
+            font-size: 1em;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        #spin-btn::after {
+            content: '';
+            position: absolute;
+            top: 90px;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #c66e16;
+            transform: translate(-50%, -50%);
+        }
+        #final-value {
+            font-size: 1.5em;
+            margin-top: 1.5em;
+            color: #202020;
+            font-weight: 500;
+        }
+        @media screen and (max-width: 768px) {
+            .wrapper {
+                font-size: 12px;
+            }
+            #spin-btn {
+                height: 50px;
+                width: 50px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <canvas id="wheel"></canvas>
+            <button id="spin-btn">Spin</button>
+        </div>
+        <div id="final-value">
+            <!-- Placeholder for spin results -->
+        </div>
+    </div>
+
+    <!-- Chart JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Chart JS Plugin for displaying text over chart -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
+    <script>
+        const wheel = document.getElementById("wheel");
+        const spinBtn = document.getElementById("spin-btn");
+        const finalValue = document.getElementById("final-value");
+
+        // Object that stores values of minimum and maximum angle for a value
+        const rotationValues = [
+            { minDegree: 0, maxDegree: 30, value: 'Payroll\nManagement' },
+            { minDegree: 31, maxDegree: 90, value: 'Talent\nAcquisition' },
+            { minDegree: 91, maxDegree: 150, value: 'HR\nOperations' },
+            { minDegree: 151, maxDegree: 210, value: 'EOR/PEO\nServices' },
+            { minDegree: 211, maxDegree: 270, value: 'Artificial\nIntelligence\nSolutions' },
+            { minDegree: 271, maxDegree: 330, value: 'HR\nTechnology\nImplementation' },
+            { minDegree: 331, maxDegree: 360, value: 'Payroll\nManagement' },
+        ];
+
+        // Size of each piece
+        const data = [16, 16, 16, 16, 16, 16];
+        // Background color for each piece
+        const pieColors = [
+            "#000000",
+            "#333333",
+            "#000000",
+            "#333333",
+            "#000000",
+            "#333333",
+        ];
+
+        // Create chart
+        let myChart = new Chart(wheel, {
+            plugins: [ChartDataLabels],
+            type: "pie",
+            data: {
+                labels: [
+                    'Payroll\nManagement',
+                    'Talent\nAcquisition',
+                    'HR\nOperations',
+                    'EOR/PEO\nServices',
+                    'Artificial\nIntelligence\nSolutions',
+                    'HR\nTechnology\nImplementation'
+                ],
+                datasets: [{
+                    backgroundColor: pieColors,
+                    data: data,
+                }],
+            },
+            options: {
+                responsive: true,
+                animation: { duration: 0 },
+                plugins: {
+                    tooltip: false,
+                    legend: {
+                        display: false,
+                    },
+                    datalabels: {
+                        color: "#ffffff",
+                        formatter: (_, context) => context.chart.data.labels[context.dataIndex],
+                        font: { size: 14 }, // Adjust font size for better fit
+                        anchor: 'top',
+                        align: 'center',
+                        padding: 80, // Add some padding to prevent overlap
+                        lineHeight: 1.2 // Adjust line height for better readability
+                    },
+                },
+            },
+        });
+
+        // Display value based on the randomAngle
+        const valueGenerator = (angleValue) => {
+            for (let i of rotationValues) {
+                if (angleValue >= i.minDegree && angleValue <= i.maxDegree) {
+                    finalValue.innerHTML = `<p>Value: ${i.value}</p>`;
+                    spinBtn.disabled = false;
+                    break;
+                }
+            }
+        };
+
+        // Spinner count
+        let count = 0;
+        // 100 rotations for animation and last rotation for result
+        let resultValue = 101;
+
+        // Start spinning
+        spinBtn.addEventListener("click", () => {
+            spinBtn.disabled = true;
+            finalValue.innerHTML = `<p>Good Luck!</p>`;
+            let randomDegree = Math.floor(Math.random() * (355 - 0 + 1) + 0);
+            let rotationInterval = window.setInterval(() => {
+                myChart.options.rotation = (myChart.options.rotation || 0) + resultValue;
+                myChart.update();
+                if (myChart.options.rotation >= 360) {
+                    count += 1;
+                    resultValue -= 5;
+                    myChart.options.rotation = 0;
+                } else if (count > 15 && myChart.options.rotation == randomDegree) {
+                    valueGenerator(randomDegree);
+                    clearInterval(rotationInterval);
+                    count = 0;
+                    resultValue = 101;
+                }
+            }, 10);
+        });
+    </script>
+</body>
+</html>
